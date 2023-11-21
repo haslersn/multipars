@@ -1,0 +1,33 @@
+[package]
+name = "multipars"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-bincode = "0.7"
+async-trait = "0.1"
+bincode = "1.3"
+clap = { version = "4.0", features = ["derive"] }
+crypto-bigint = { version = "0.5.5", features = ["alloc", "serde", "generic-array"] }
+derive_more = "0.99"
+env_logger = "0.8.4"
+forward_ref_generic = "0.2"
+futures-util = { version = "0.3", features = ["sink"] }
+log = "0.4"
+quinn = "0.8"
+rand = "0.8"
+rand_chacha = "0.3"
+rcgen = "0.9"
+rustls = { version = "0.20", features = ["dangerous_configuration"] } # TODO: No dangerous_configuration
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.16", features = ["full"] }
+
+[dev-dependencies]
+criterion = { version = "0.3", features = ["async_tokio"] }
+
+[[bench]]
+name = "main"
+harness = false
