@@ -2,7 +2,7 @@ use futures_util::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    bgv::{generic_uint::GenericUint, residue::native::GenericNativeResidue},
+    bgv::residue::native::GenericNativeResidue,
     bi_channel::BiChannel,
     connection::{Connection, StreamError},
 };
@@ -192,5 +192,5 @@ where
     KS: GenericNativeResidue,
     KSS: GenericNativeResidue,
 {
-    KS::from_uint(x.retrieve().shr_vartime(KSS::BITS - KS::BITS))
+    KS::from_unsigned(x.shr_vartime(KSS::BITS - KS::BITS))
 }

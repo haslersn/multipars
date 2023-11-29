@@ -4,11 +4,13 @@ use rand::{CryptoRng, RngCore};
 use crate::bgv::{poly::PolyParameters, residue::GenericResidue};
 
 use super::{
-    generic_uint::GenericUint,
     poly::crt::{CrtPoly, CrtPolyParameters},
     residue::{native::GenericNativeResidue, vec::GenericResidueVec},
 };
-pub trait TIPParameters: CrtPolyParameters {
+pub trait TIPParameters: CrtPolyParameters
+where
+    Self::Residue: GenericNativeResidue,
+{
     const DELTA: u32;
 }
 
@@ -29,6 +31,7 @@ where
 pub fn get_random_unpacked<P, T>(mut rng: impl CryptoRng + RngCore) -> Vec<T>
 where
     P: TIPParameters,
+    P::Residue: GenericNativeResidue,
     T: GenericNativeResidue,
 {
     (0..packing_capacity::<P>())
@@ -39,6 +42,7 @@ where
 pub fn pack<P>(unpacked: &[impl GenericNativeResidue]) -> CrtPoly<P>
 where
     P: TIPParameters,
+    P::Residue: GenericNativeResidue,
 {
     assert!(unpacked.len() <= packing_capacity::<P>());
 
@@ -68,13 +72,10 @@ where
 
         // Compute factor := 2^delta / denom
         let denom = <P as PolyParameters>::Residue::from_i64(denom);
-        let factor = GenericResidue::from_uint(
-            denom
-                .invert()
-                .0
-                .retrieve()
-                .shl_vartime((P::DELTA - trailing_zeros) as usize),
-        );
+        let factor = denom
+            .invert()
+            .0
+            .shl_vartime((P::DELTA - trailing_zeros) as usize);
 
         // Compute lp *= factor
         for entry in lp.iter_mut() {
@@ -121,10 +122,10 @@ where
 pub fn pack_diagonal<P>(unpacked: impl GenericNativeResidue) -> CrtPoly<P>
 where
     P: TIPParameters,
+    P::Residue: GenericNativeResidue,
 {
     let mut result = CrtPoly::<P>::new();
-    let mut cc = <P as PolyParameters>::Residue::from_unsigned(unpacked);
-    cc = GenericResidue::from_uint(cc.retrieve().shl_vartime(P::DELTA as usize));
+    let cc = <P as PolyParameters>::Residue::from_unsigned(unpacked).shl_vartime(P::DELTA as usize);
     for factor_index in 0..P::FACTOR_COUNT {
         result.coefficients[factor_index * P::FACTOR_DEGREE] = cc;
     }
@@ -134,10 +135,11 @@ where
 pub fn pack_mask<P>(unpacked: &[impl GenericNativeResidue]) -> CrtPoly<P>
 where
     P: TIPParameters,
+    P::Residue: GenericNativeResidue,
 {
     let mut result = pack::<P>(unpacked);
     for coeff in result.coefficients.iter_mut() {
-        *coeff = GenericResidue::from_uint(coeff.retrieve().shl_vartime(P::DELTA as usize));
+        *coeff = coeff.shl_vartime(P::DELTA as usize);
     }
     // TODO: Add fiber of 0 and mask upper bits
     result
@@ -146,6 +148,7 @@ where
 pub fn unpack<P, T>(crt: &CrtPoly<P>) -> Option<Vec<T>>
 where
     P: TIPParameters,
+    P::Residue: GenericNativeResidue,
     T: GenericNativeResidue,
 {
     // TODO: Precompute
@@ -176,8 +179,7 @@ where
                 evaluated += crt.coefficients[slot_begin + i] * b_powers[i];
             }
             // TODO: Check that `evaluated` is divisible by 2^(2delta)
-            let shifted = evaluated.retrieve().shr_vartime(2 * P::DELTA as usize);
-            *entry = GenericResidue::from_uint(shifted);
+            *entry = GenericResidue::from_unsigned(evaluated.shr_vartime(2 * P::DELTA as usize));
         }
     }
 

@@ -19,7 +19,7 @@ pub struct ToyPreprocK32S32 {}
 
 impl PreprocessorParameters for ToyPreprocK32S32 {
     type DealerParams = ToyDealerK32S32;
-    type PlaintextUint = <Self::PlaintextParams as PolyParameters>::Uint;
+    type PlaintextResidue = <Self::PlaintextParams as PolyParameters>::Residue;
     type PlaintextParams = Phi337ModT86;
     type CiphertextParams = Phi337ModP259;
     type BgvParams = (Self::PlaintextParams, Self::CiphertextParams);
@@ -38,7 +38,7 @@ pub struct PreprocK32S32 {}
 
 impl PreprocessorParameters for PreprocK32S32 {
     type DealerParams = DealerK32S32;
-    type PlaintextUint = <Self::PlaintextParams as PolyParameters>::Uint;
+    type PlaintextResidue = <Self::PlaintextParams as PolyParameters>::Residue;
     type PlaintextParams = Phi43691ModT135;
     type CiphertextParams = Phi43691ModP387;
     type BgvParams = (Self::PlaintextParams, Self::CiphertextParams);
@@ -57,7 +57,7 @@ pub struct PreprocK64S64 {}
 
 impl PreprocessorParameters for PreprocK64S64 {
     type DealerParams = DealerK64S64;
-    type PlaintextUint = <Self::PlaintextParams as PolyParameters>::Uint;
+    type PlaintextResidue = <Self::PlaintextParams as PolyParameters>::Residue;
     type PlaintextParams = Phi43691ModT233;
     type CiphertextParams = Phi43691ModP616;
     type BgvParams = (Self::PlaintextParams, Self::CiphertextParams);
@@ -76,7 +76,7 @@ pub struct PreprocK128S64 {}
 
 impl PreprocessorParameters for PreprocK128S64 {
     type DealerParams = DealerK128S64;
-    type PlaintextUint = <Self::PlaintextParams as PolyParameters>::Uint;
+    type PlaintextResidue = <Self::PlaintextParams as PolyParameters>::Residue;
     type PlaintextParams = Phi43691ModT297;
     type CiphertextParams = Phi43691ModP744;
     type BgvParams = (Self::PlaintextParams, Self::CiphertextParams);

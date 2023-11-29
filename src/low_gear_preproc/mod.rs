@@ -19,8 +19,8 @@ use crate::bgv::zkpopk::verifier::Verifier;
 use crate::bgv::zkpopk::{Challenge, Commitment, Response};
 use crate::bgv::PreparedPlaintext;
 use crate::bgv::{
-    self, generic_uint::ExtendableUint, residue::GenericResidue, BgvParameters, Ciphertext,
-    Cleartext, PreCiphertext, PublicKey, SecretKey,
+    self, residue::GenericResidue, BgvParameters, Ciphertext, Cleartext, PreCiphertext, PublicKey,
+    SecretKey,
 };
 use crate::bi_channel::BiChannel;
 use crate::connection::{Connection, StreamError};
@@ -34,8 +34,8 @@ use self::truncer::Truncer;
 pub trait PreprocessorParameters: PartialEq + Debug + Send + Sync + 'static {
     type DealerParams: DealerParameters<K = Self::K, S = Self::S, KS = Self::KS>;
 
-    type PlaintextUint: ExtendableUint;
-    type PlaintextParams: TIPParameters<Uint = Self::PlaintextUint>;
+    type PlaintextResidue: GenericNativeResidue;
+    type PlaintextParams: TIPParameters<Residue = Self::PlaintextResidue>;
     type CiphertextParams: CrtPolyParameters;
 
     type BgvParams: BgvParameters<

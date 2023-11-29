@@ -14,7 +14,10 @@ use crate::bgv::generic_uint::{ExtendableUint, GenericUint};
 
 use super::GenericResidue;
 
-pub trait GenericNativeResidue: GenericResidue {}
+pub trait GenericNativeResidue: GenericResidue {
+    fn shr_vartime(&self, shift: usize) -> Self;
+    fn shl_vartime(&self, shift: usize) -> Self;
+}
 
 // TODO: Serialize and Deserialize must use reduced form for security (and shortness).
 #[derive(Clone, Copy, Debug, Eq, Serialize, Deserialize)]
@@ -29,6 +32,15 @@ where
     Self: GenericResidue,
     Uint<NLIMBS>: ExtendableUint,
 {
+    #[inline(always)]
+    fn shr_vartime(&self, shift: usize) -> Self {
+        Self(self.0.shr_vartime(shift))
+    }
+
+    #[inline(always)]
+    fn shl_vartime(&self, shift: usize) -> Self {
+        Self(self.0.shl_vartime(shift))
+    }
 }
 
 impl<const BITS: usize, const NLIMBS: usize> Zero for NativeResidue<BITS, NLIMBS>
