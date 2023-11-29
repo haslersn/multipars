@@ -191,7 +191,9 @@ mod tests {
     use crate::{
         bgv::{
             poly::CrtContext,
-            tweaked_interpolation_packing::{get_random_unpacked, pack, pack_mask, unpack},
+            tweaked_interpolation_packing::{
+                get_random_unpacked, pack, pack_diagonal, pack_mask, packing_capacity, unpack,
+            },
         },
         low_gear_preproc::{
             params::{PreprocK128S64, PreprocK32S32, PreprocK64S64},
@@ -291,6 +293,32 @@ mod tests {
             .zip(e.iter())
             .map(|((a, b), e)| *a * *b + *e)
             .collect();
+        assert_eq!(expected, actual);
+    }
+
+    #[tokio::test]
+    async fn pack_diagonal_eq_t96() {
+        pack_diagonal_eq::<PreprocK32S32>().await;
+    }
+
+    #[tokio::test]
+    async fn pack_diagonal_eq_t192() {
+        pack_diagonal_eq::<PreprocK64S64>().await;
+    }
+
+    #[tokio::test]
+    async fn pack_diagonal_eq_t256() {
+        pack_diagonal_eq::<PreprocK128S64>().await;
+    }
+
+    async fn pack_diagonal_eq<P: PreprocessorParameters>() {
+        let mut rng = rand::thread_rng();
+        let x = P::KSS::random(&mut rng);
+        let actual = pack_diagonal(x);
+        let diag: Vec<_> = (0..packing_capacity::<P::PlaintextParams>())
+            .map(|_| x)
+            .collect();
+        let expected = pack::<P::PlaintextParams>(&diag);
         assert_eq!(expected, actual);
     }
 }
