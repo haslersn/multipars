@@ -1,5 +1,7 @@
 use futures_util::{SinkExt, StreamExt};
 use log::info;
+use rand::{Rng, SeedableRng};
+use rand_chacha::ChaCha20Rng;
 
 use crate::bgv::residue::native::GenericNativeResidue;
 use crate::bi_channel::BiChannel;
@@ -14,7 +16,8 @@ where
     KS: GenericNativeResidue,
     S: GenericNativeResidue,
 {
-    channel: BiChannel<Vec<KS>>,
+    ch_values: BiChannel<Vec<KS>>,
+    ch_seed: BiChannel<[u8; 32]>,
     mac_key: S,
 }
 
@@ -25,7 +28,8 @@ where
 {
     pub async fn new(conn: &mut Connection, mac_key: S) -> Result<Self, StreamError> {
         Ok(Self {
-            channel: BiChannel::open(conn).await?,
+            ch_values: BiChannel::open(conn).await?,
+            ch_seed: BiChannel::open(conn).await?,
             mac_key,
         })
     }
@@ -43,7 +47,7 @@ where
     where
         K: GenericNativeResidue,
     {
-        let (rx, tx) = self.channel.split();
+        let (rx, tx) = self.ch_values.split();
 
         let (_, received) = tokio::join!(
             async {
@@ -56,7 +60,7 @@ where
 
         if received.len() != 1 {
             info!(
-                "MacCheckOpener::single expected 1 value but received {}",
+                "MacCheckOpener::single_check expected 1 value but received {}",
                 received.len()
             );
             return Err(MacCheckFailed {});
@@ -76,7 +80,7 @@ where
 
         if received.len() != 1 {
             info!(
-                "MacCheckOpener::single expected 1 value but received {}",
+                "MacCheckOpener::single_check expected 1 value but received {}",
                 received.len()
             );
             return Err(MacCheckFailed {});
@@ -85,14 +89,50 @@ where
         let sum = z + received[0];
 
         if sum != KS::ZERO {
-            info!("MacCheckOpener::single failed");
+            info!("MacCheckOpener::single_check failed");
             return Err(MacCheckFailed {});
         }
+
+        println!("MacCheck: check passed");
 
         Ok(K::from_unsigned(val))
     }
 
+    pub async fn batch_check<K, const PID: usize>(
+        &mut self,
+        shares: impl Iterator<Item = Share<KS, K, PID>>,
+        mut mask: Share<KS, K, PID>,
+    ) -> Result<(), MacCheckFailed>
+    where
+        K: GenericNativeResidue,
+    {
+        let (rx, tx) = self.ch_seed.split();
+
+        let local_seed: [u8; 32] = rand::thread_rng().gen();
+
+        tokio::join!(
+            async {
+                tx.send(local_seed).await.unwrap();
+            },
+            async {
+                let remote_seed = rx.next().await.unwrap().unwrap();
+                let mut seed = local_seed.clone();
+                for (dst, src) in seed.iter_mut().zip(remote_seed) {
+                    *dst ^= src;
+                }
+                let mut prng = ChaCha20Rng::from_seed(seed);
+                for share in shares {
+                    // TODO: random value should be in S
+                    mask += share * K::random(&mut prng);
+                }
+            }
+        );
+
+        self.single_check(mask).await?;
+        Ok(())
+    }
+
     pub async fn finish(self) {
-        let _ = self.channel.writer.into_inner().finish().await;
+        let _ = self.ch_values.writer.into_inner().finish().await;
     }
 }

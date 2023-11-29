@@ -1,5 +1,5 @@
 use std::marker::PhantomData;
-use std::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Mul, MulAssign, Neg, Shl, Shr, Sub, SubAssign};
 
 use async_trait::async_trait;
 use forward_ref_generic::{forward_ref_binop, forward_ref_op_assign, forward_ref_unop};
@@ -294,3 +294,31 @@ forward_ref_op_assign!(
     [KS: GenericNativeResidue, K: GenericNativeResidue, const PID: usize]
     impl MulAssign, mul_assign for Share<KS, K, PID>, K
 );
+
+impl<KS, K, const PID: usize> Shl<usize> for Share<KS, K, PID>
+where
+    KS: GenericNativeResidue,
+    K: GenericNativeResidue,
+{
+    type Output = Self;
+
+    fn shl(mut self, rhs: usize) -> Self::Output {
+        self.val = self.val.shl_vartime(rhs);
+        self.tag = self.tag.shl_vartime(rhs);
+        self
+    }
+}
+
+impl<KS, K, const PID: usize> Shr<usize> for Share<KS, K, PID>
+where
+    KS: GenericNativeResidue,
+    K: GenericNativeResidue,
+{
+    type Output = Self;
+
+    fn shr(mut self, rhs: usize) -> Self::Output {
+        self.val = self.val.shr_vartime(rhs);
+        self.tag = self.tag.shr_vartime(rhs);
+        self
+    }
+}

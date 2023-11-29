@@ -280,19 +280,20 @@ where
             let mut unpacked_wide_a_tags: Vec<_> =
                 unpacked_wide_a.iter().map(|a| *a * mac_key_wide).collect();
 
-            let (_r, _r_tag, _m, _m_tag, unpacked_b, unpacked_b_tags) = {
+            let (batch_check_mask, unpacked_b, unpacked_b_tags) = {
                 let mut input = get_random_unpacked::<P::PlaintextParams, P::K>(rand::thread_rng());
                 input.push(P::K::random(&mut rand::thread_rng()));
                 input.push(P::K::random(&mut rand::thread_rng()));
                 let mut output = self.dealer.authenticate(&input).await;
-                (
-                    input.pop(),
-                    output.pop(),
-                    input.pop(),
-                    output.pop(),
-                    input,
-                    output,
-                )
+                let r = Share::new(
+                    P::KS::from_unsigned(input.pop().unwrap()),
+                    output.pop().unwrap(),
+                );
+                let m = Share::new(
+                    P::KS::from_unsigned(input.pop().unwrap()),
+                    output.pop().unwrap(),
+                );
+                (m + (r << P::K::BITS), input, output)
             };
 
             let mut unpacked_wide_c: Vec<_> = unpacked_wide_a
@@ -399,11 +400,14 @@ where
                         )
                     }),
             );
+
+            self.opener
+                .batch_check::<P::K, PID>([].into_iter(), batch_check_mask)
+                .await
+                .unwrap();
         }
 
         assert!(self.a_stack.is_empty());
-
-        // TODO: MAC check
 
         println!("batch of size {} completed", triples.len());
 
