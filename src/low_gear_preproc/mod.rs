@@ -401,8 +401,13 @@ where
                     }),
             );
 
+            let iter = triples
+                .iter()
+                .cloned()
+                .map(|triple| [triple.a, triple.b, triple.c])
+                .flatten();
             self.opener
-                .batch_check::<P::K, PID>([].into_iter(), batch_check_mask)
+                .batch_check::<P::K, PID>(iter, batch_check_mask)
                 .await
                 .unwrap();
         }
