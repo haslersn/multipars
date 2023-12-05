@@ -70,6 +70,7 @@ impl Connection {
 
         let mut transport_config = TransportConfig::default();
         transport_config.max_idle_timeout(None); // TODO: Can we get low gear to work with idle timeout?
+        transport_config.max_concurrent_uni_streams(1024u32.into());
         let transport_config = Arc::new(transport_config);
 
         let cert = rcgen::generate_simple_self_signed(vec!["localhost".into()])
