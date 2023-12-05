@@ -87,7 +87,7 @@ impl Connection {
             .map_err(ConnectionError::InvalidLocalCert)?;
         let mut server_config = quinn::ServerConfig::with_crypto(Arc::new(server_crypto));
         server_config.transport = Arc::clone(&transport_config);
-        let (endpoint, incoming) = quinn::Endpoint::server(server_config, listen_addr)
+        let (_endpoint, incoming) = quinn::Endpoint::server(server_config, listen_addr)
             .map_err(ConnectionError::BindError)?;
         let client_crypto = rustls::ClientConfig::builder()
             .with_safe_defaults()
@@ -95,7 +95,12 @@ impl Connection {
             .with_no_client_auth();
         let mut client_config = quinn::ClientConfig::new(Arc::new(client_crypto));
         client_config.transport = transport_config;
-        let client_connecting = endpoint
+        let client_bind_addr = match remote_addr {
+            SocketAddr::V4(_) => "0.0.0.0:0".parse().unwrap(),
+            SocketAddr::V6(_) => "[::]:0".parse().unwrap(),
+        };
+        let client_connecting = quinn::Endpoint::client(client_bind_addr)
+            .map_err(ConnectionError::BindError)?
             .connect_with(client_config, remote_addr, "localhost")
             .map_err(ConnectionError::InvalidClientConfig)?;
         let NewConnection { connection, .. } = client_connecting

@@ -19,6 +19,7 @@ pub mod examples {
     use crate::connection::Connection;
     use crate::interface::BatchedPreprocessor;
     use crate::low_gear_preproc::{self, LowGearPreprocessor, PreprocessorParameters};
+    use crate::util::resolve_host;
 
     pub async fn low_gear<PreprocParams, const PID: usize>(
         local: &str,
@@ -29,8 +30,8 @@ pub mod examples {
     where
         PreprocParams: PreprocessorParameters,
     {
-        let local_addr = local.parse().unwrap();
-        let remote_addr = remote.parse().unwrap();
+        let local_addr = local.parse()?;
+        let remote_addr = resolve_host(remote)?;
 
         let mut conn = Connection::new(local_addr, remote_addr).await?;
 

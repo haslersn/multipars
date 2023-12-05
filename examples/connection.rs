@@ -2,7 +2,7 @@ use std::error::Error;
 
 use async_bincode::tokio::{AsyncBincodeReader, AsyncBincodeWriter};
 use futures_util::{SinkExt, StreamExt};
-use multipars::connection::Connection;
+use multipars::{connection::Connection, util::resolve_host};
 use tokio::task::JoinError;
 
 #[tokio::main]
@@ -23,8 +23,8 @@ async fn main() -> Result<(), JoinError> {
 }
 
 async fn run_party(local: &str, remote: &str) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let local_addr = local.parse().unwrap();
-    let remote_addr = remote.parse().unwrap();
+    let local_addr = local.parse()?;
+    let remote_addr = resolve_host(remote)?;
 
     let mut conn1 = Connection::new(local_addr, remote_addr).await?;
     let mut conn2 = conn1.fork();
