@@ -118,7 +118,10 @@ impl Connection {
         })
     }
 
-    pub async fn open_bi(&mut self) -> Result<(quinn::SendStream, quinn::RecvStream), StreamError> {
+    pub async fn open_bi(
+        &mut self,
+        name: &str,
+    ) -> Result<(quinn::SendStream, quinn::RecvStream), StreamError> {
         let mut id = self.id.clone();
         id.push(self.num_streams);
 
@@ -128,7 +131,10 @@ impl Connection {
             .open_uni()
             .await
             .map_err(StreamError::FailedToOpen)?;
-        info!("{}, ID {:?}: Opened outgoing stream", self.listen_addr, id);
+        info!(
+            "{} {:?} {}: Opened outgoing stream",
+            self.listen_addr, id, name
+        );
         AsyncBincodeWriter::from(&mut send)
             .for_async()
             .send(&id)
@@ -138,8 +144,8 @@ impl Connection {
         // `unwrap()` cannot fail, because we never reuse IDs.
         let recv = self.recv_mapper.recv(id.clone()).await.unwrap();
         info!(
-            "{}, ID {:?}: Handling incoming stream",
-            self.listen_addr, id
+            "{} {:?} {}: Handling incoming stream",
+            self.listen_addr, id, name
         );
 
         self.num_streams += 1;
@@ -308,7 +314,7 @@ mod tests {
         conn: &mut Connection,
         payload: i32,
     ) -> Result<(), Box<dyn Error + Send + Sync>> {
-        let (mut tx, mut rx) = conn.open_bi().await?;
+        let (mut tx, mut rx) = conn.open_bi("test:open_bi_and_exchange_i32").await?;
         AsyncBincodeWriter::from(&mut tx)
             .for_async()
             .send(payload)

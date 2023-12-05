@@ -28,8 +28,8 @@ where
 {
     pub async fn new(conn: &mut Connection, mac_key: S) -> Result<Self, StreamError> {
         Ok(Self {
-            ch_values: BiChannel::open(conn).await?,
-            ch_seed: BiChannel::open(conn).await?,
+            ch_values: BiChannel::open(conn, "MacCheckOpener:values").await?,
+            ch_seed: BiChannel::open(conn, "MacCheckOpener:seed").await?,
             mac_key,
         })
     }

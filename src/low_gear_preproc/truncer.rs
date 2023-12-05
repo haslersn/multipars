@@ -29,8 +29,8 @@ where
 {
     pub async fn new(conn: &mut Connection, mac_key: S) -> Result<Self, StreamError> {
         Ok(Self {
-            ch_a: BiChannel::open(conn).await?,
-            ch_com: BiChannel::open(conn).await?,
+            ch_a: BiChannel::open(conn, "Truncer:a").await?,
+            ch_com: BiChannel::open(conn, "Truncer:com").await?,
             mac_key,
         })
     }

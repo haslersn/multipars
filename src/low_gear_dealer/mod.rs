@@ -66,7 +66,7 @@ where
     P: DealerParameters,
 {
     pub async fn new(conn: &mut Connection, mac_key: P::S) -> Result<Self, StreamError> {
-        let (tx, rx) = conn.open_bi().await?;
+        let (tx, rx) = conn.open_bi("LowGearDealer").await?;
         let mut bincode_tx = AsyncBincodeWriter::from(tx).for_async();
         let mut bincode_rx = AsyncBincodeReader::from(rx);
         let ctx = CrtContext::gen().await;

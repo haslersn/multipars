@@ -9,8 +9,11 @@ pub struct BiChannel<Message> {
 }
 
 impl<Message> BiChannel<Message> {
-    pub async fn open(conn: &mut Connection) -> Result<BiChannel<Message>, StreamError> {
-        let (tx, rx) = conn.open_bi().await?;
+    pub async fn open(
+        conn: &mut Connection,
+        name: &str,
+    ) -> Result<BiChannel<Message>, StreamError> {
+        let (tx, rx) = conn.open_bi(name).await?;
         Ok(BiChannel {
             reader: AsyncBincodeReader::from(rx),
             writer: AsyncBincodeWriter::from(tx).for_async(),

@@ -97,12 +97,14 @@ where
         let trunc = Truncer::new(conn, mac_key).await?;
 
         // Open channels used by this protocol
-        let mut ch_init = BiChannel::open(conn).await?;
-        let ch_ciphertext_there = BiChannel::open(conn).await?;
-        let ch_commitment = BiChannel::open(conn).await?;
-        let ch_challenge = BiChannel::open(conn).await?;
-        let ch_response = BiChannel::open(conn).await?;
-        let ch_ciphertext_back = BiChannel::open(conn).await?;
+        let mut ch_init = BiChannel::open(conn, "LowGearPreprocessor:init").await?;
+        let ch_ciphertext_there =
+            BiChannel::open(conn, "LowGearPreprocessor:ciphertext_there").await?;
+        let ch_commitment = BiChannel::open(conn, "LowGearPreprocessor:commitment").await?;
+        let ch_challenge = BiChannel::open(conn, "LowGearPreprocessor:challenge").await?;
+        let ch_response = BiChannel::open(conn, "LowGearPreprocessor:response").await?;
+        let ch_ciphertext_back =
+            BiChannel::open(conn, "LowGearPreprocessor:ciphertext_back").await?;
 
         // Generate cryptographic material
         let ctx_cipher = CrtContext::gen().await;

@@ -46,7 +46,7 @@ async fn open_bi_and_exchange_i32(
     conn: &mut Connection,
     payload: i32,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    let (mut tx, mut rx) = conn.open_bi().await?;
+    let (mut tx, mut rx) = conn.open_bi("open_bi_and_exchange_i32").await?;
     AsyncBincodeWriter::from(&mut tx)
         .for_async()
         .send(payload)
