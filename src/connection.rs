@@ -3,7 +3,7 @@ use std::{io, net::SocketAddr, sync::Arc};
 use async_bincode::tokio::AsyncBincodeWriter;
 use bincode::Options;
 use futures_util::{SinkExt, StreamExt};
-use log::{error, info};
+use log::{debug, error};
 use quinn::{Incoming, NewConnection, TransportConfig};
 use rcgen::RcgenError;
 use tokio::io::AsyncReadExt;
@@ -136,7 +136,7 @@ impl Connection {
             .open_uni()
             .await
             .map_err(StreamError::FailedToOpen)?;
-        info!(
+        debug!(
             "{} {:?} {}: Opened outgoing stream",
             self.listen_addr, id, name
         );
@@ -148,7 +148,7 @@ impl Connection {
 
         // `unwrap()` cannot fail, because we never reuse IDs.
         let recv = self.recv_mapper.recv(id.clone()).await.unwrap();
-        info!(
+        debug!(
             "{} {:?} {}: Handling incoming stream",
             self.listen_addr, id, name
         );

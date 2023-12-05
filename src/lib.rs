@@ -16,6 +16,8 @@ pub mod examples {
     use std::error::Error;
     use std::time::Instant;
 
+    use log::info;
+
     use crate::connection::Connection;
     use crate::interface::BatchedPreprocessor;
     use crate::low_gear_preproc::{self, LowGearPreprocessor, PreprocessorParameters};
@@ -70,12 +72,17 @@ pub mod examples {
 
                     let elapsed_time = now.elapsed();
                     let num_triples = low_gear_preproc::batch_size::<PreprocParams>() * num_batches;
-                    println!(
+                    let triples_per_sec =
+                        num_triples as f64 * 1_000_000_000f64 / elapsed_time.as_nanos() as f64;
+                    info!(
                         "{} triples/s (produced {} triples in {} ms)",
-                        num_triples as f64 * 1_000_000_000f64 / elapsed_time.as_nanos() as f64,
+                        triples_per_sec,
                         num_triples,
                         elapsed_time.as_millis()
                     );
+                    // Output only the number of triples per second to stdout, so it can be parsed
+                    // by benchmark scripts.
+                    println!("{}", triples_per_sec);
 
                     for preproc in preprocs.into_iter() {
                         preproc.unwrap().finish().await;

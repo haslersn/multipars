@@ -1,5 +1,5 @@
 use futures_util::{SinkExt, StreamExt};
-use log::info;
+use log::{error, info};
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha20Rng;
 
@@ -59,7 +59,7 @@ where
         );
 
         if received.len() != 1 {
-            info!(
+            error!(
                 "MacCheckOpener::single_check expected 1 value but received {}",
                 received.len()
             );
@@ -79,7 +79,7 @@ where
         );
 
         if received.len() != 1 {
-            info!(
+            error!(
                 "MacCheckOpener::single_check expected 1 value but received {}",
                 received.len()
             );
@@ -89,11 +89,11 @@ where
         let sum = z + received[0];
 
         if sum != KS::ZERO {
-            info!("MacCheckOpener::single_check failed");
+            error!("MacCheckOpener::single_check failed");
             return Err(MacCheckFailed {});
         }
 
-        println!("MacCheck: check passed");
+        info!("MacCheck: check passed");
 
         Ok(K::from_unsigned(val))
     }

@@ -6,6 +6,7 @@ use std::fmt::Debug;
 use async_trait::async_trait;
 use crypto_bigint::Random;
 use futures_util::{SinkExt, StreamExt};
+use log::info;
 
 use crate::bgv::poly::crt::{CrtPoly, CrtPolyParameters};
 use crate::bgv::poly::power::PowerPoly;
@@ -150,7 +151,7 @@ where
             let (rx_challenge, tx_challenge) = self.ch_challenge.split();
             let (rx_response, tx_response) = self.ch_response.split();
 
-            println!("ZKPoK: amortizing over {} ciphertexts", P::ZKPOPK_AMORTIZE);
+            info!("ZKPoK: amortizing over {} ciphertexts", P::ZKPOPK_AMORTIZE);
 
             tokio::join!(
                 async {
@@ -205,7 +206,7 @@ where
                     for iteration_num in 0..P::ZKPOPK_AMORTIZE {
                         let cipher_a = rx_ciphertext.next().await.unwrap().unwrap();
                         pre_cipher_a_vec.push(cipher_a);
-                        println!(
+                        info!(
                             "ZKPoK: received ciphertext {}/{}",
                             iteration_num + 1,
                             P::ZKPOPK_AMORTIZE
@@ -245,7 +246,7 @@ where
                         }
                     }
 
-                    println!("ZKPoK: verification successful");
+                    info!("ZKPoK: verification successful");
                 }
             );
 
@@ -274,7 +275,7 @@ where
         let mut triples = Vec::new();
         for iteration_num in 0..P::ZKPOPK_AMORTIZE {
             let (unpacked_wide_a, cipher_a) = self.get_a().await;
-            println!(
+            info!(
                 "started iteration {}/{}",
                 iteration_num + 1,
                 P::ZKPOPK_AMORTIZE
@@ -361,7 +362,7 @@ where
                             &CrtPoly::from_power(&self.ctx_plain, &plain_d).await,
                         )
                         .unwrap();
-                        println!("VOLE: decrypted & unpacked {}/3", i + 1);
+                        info!("VOLE: decrypted & unpacked {}/3", i + 1);
                         let target = match i {
                             0 => &mut unpacked_wide_a_tags,
                             1 => &mut unpacked_wide_c,
@@ -416,7 +417,7 @@ where
 
         assert!(self.a_stack.is_empty());
 
-        println!("batch of size {} completed", triples.len());
+        info!("batch of size {} completed", triples.len());
 
         triples
     }

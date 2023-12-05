@@ -6,6 +6,7 @@ use async_bincode::tokio::{AsyncBincodeReader, AsyncBincodeWriter};
 use async_bincode::AsyncDestination;
 use crypto_bigint::{Random, Zero};
 use futures_util::{SinkExt, StreamExt};
+use log::info;
 use serde::{Deserialize, Serialize};
 
 use crate::bgv::poly::crt::CrtPolyParameters;
@@ -223,7 +224,7 @@ where
         Message::Tags(ciphertext) => bgv::decrypt(ctx, sk, &ciphertext).await,
         _ => panic!("Received message with wrong round number"),
     };
-    println!("Auth: decrypted ciphertext");
+    info!("Auth: decrypted ciphertext");
     plain_d.coefficients.iter().take(n).copied().collect()
 }
 

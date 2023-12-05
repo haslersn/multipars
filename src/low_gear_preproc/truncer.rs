@@ -1,4 +1,5 @@
 use futures_util::{SinkExt, StreamExt};
+use log::info;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -165,7 +166,7 @@ where
                             }
                         }
 
-                        println!("Trunc: check passed");
+                        info!("Trunc: check passed");
 
                         let a = wide_a.iter().copied().map(shift).collect();
                         let a_tags = hat_a_tags.iter().copied().map(shift).collect();
