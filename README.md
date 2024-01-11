@@ -4,8 +4,10 @@ This software implements the Multipars Beaver triple generation protocol in Rust
 
 ## Setup
 
-Compiling Multipars requires the nightly Rust compiler.
+Compiling Multipars requires a 64-bit operating system and the nightly Rust compiler.
 Most recently, we tested it using `nightly-2023-11-20`.
+If you have rustup installed, you can enable that nightly version by running
+`rustup default nightly-2023-11-20`.
 
 ### Ubuntu 22.04
 
