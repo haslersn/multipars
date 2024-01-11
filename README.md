@@ -55,6 +55,9 @@ other party.
 Below we show the required arguments to run on abovementioned VMs `pets177-base` and
 `pets281-base`.
 
+**Warning:** the benchmarks can take multiple hours to finish running, so it's recommended to run
+them in a detachable console such as screen or tmux.
+
 We configured the uplink on these VMs to have a limit of 50 Mbit/s and a delay of 50 ms (= 100 ms
 RTT between the VMs).
 This corresponds to our WAN setup in Figure 7(a).
